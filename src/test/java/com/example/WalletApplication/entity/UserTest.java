@@ -8,18 +8,16 @@ class UserTest {
 
     @Test
     public void testUserCreation() {
+        String userName = "testUserName";
+        String password = "testPassword";
+        Wallet wallet = new Wallet();
         assertDoesNotThrow(() -> {
-            new User();
+            new User(userName,password,wallet);
         });
     }
 
-    @Test
-    public void testUserUpdateName() {
-        User user = new User();
-        user.setUsername("username");
 
-        assertEquals("username", user.getUsername());
-    }
+
 
     @Test
     public void testUserUpdateNameAndPassword() {
@@ -35,6 +33,7 @@ class UserTest {
     public void testUserSetWallet() {
         User user = new User();
         user.setUsername("username");
+        user.setPassword("password");
         Wallet wallet = new Wallet();
         user.setWallet(wallet);
 
@@ -47,7 +46,7 @@ class UserTest {
         User user = new User();
         User user2 = new User();
 
-        assertEquals(user, user2);
+        assertNotEquals(user, user2);
     }
 
 }

@@ -13,7 +13,4 @@ public class Wallet {
     private Long id;
     private double balance = 0.0;
 
-
-
-    // Getters and Setters
 }

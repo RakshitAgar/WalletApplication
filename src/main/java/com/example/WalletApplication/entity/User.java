@@ -18,4 +18,12 @@ public class User {
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     private Wallet wallet;
 
+    public User(String username, String password, Wallet wallet) {
+        this.username = username;
+        this.password = password;
+        this.wallet = wallet;
+    }
+
+    public User() {
+    }
 }

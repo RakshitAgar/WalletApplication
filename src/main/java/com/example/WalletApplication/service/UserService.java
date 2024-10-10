@@ -1,5 +1,6 @@
 package com.example.WalletApplication.service;
 
+import com.example.WalletApplication.Exceptions.InvalidUserRegistrationCredentials;
 import com.example.WalletApplication.entity.User;
 import com.example.WalletApplication.entity.Wallet;
 import com.example.WalletApplication.repository.UserRepository;
@@ -19,6 +20,9 @@ public class UserService{
     }
 
     public User registerUser(String username, String password) {
+        if(username.isBlank() || password.isBlank()) {
+            throw new InvalidUserRegistrationCredentials("Username and password cannot be empty");
+        }
         User user = new User();
         user.setUsername(username);
         user.setPassword(password);
