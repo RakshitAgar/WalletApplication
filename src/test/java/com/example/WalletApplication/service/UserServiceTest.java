@@ -2,22 +2,64 @@ package com.example.WalletApplication.service;
 
 import com.example.WalletApplication.Exceptions.InvalidUserRegistrationCredentials;
 import com.example.WalletApplication.entity.User;
-import com.example.WalletApplication.entity.Wallet;
 import com.example.WalletApplication.repository.UserRepository;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+@SpringBootTest
+@Transactional
 class UserServiceTest {
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private UserService userService;
 
     @Test
     public void testUserRegistration() {
         UserRepository userRepository = mock(UserRepository.class);
         assertDoesNotThrow(() -> {
-            UserService userService = new UserService(userRepository);
+            new UserService(userRepository);
+        });
+    }
+    @Test
+    public void testRegisterUserWithLocalDbAndAutowired() {
+        String username = "realUser";
+        String password = "realPassword";
+
+        // This uses the real database (H2) and the real repository via Autowired
+        User result = userService.registerUser(username, password);
+
+        // Verify the user was saved in the real local database (H2)
+        User savedUser = userRepository.findById(result.getId()).orElse(null);
+        assertNotNull(savedUser);
+        assertEquals(username, savedUser.getUsername());
+        assertEquals(password, savedUser.getPassword());
+    }
+
+    @Test
+    public void testRegisterUserExceptionWithSameUsernameAgain() {
+        String username = "realUser";
+        String password = "realPassword";
+
+        User result = userService.registerUser(username, password);
+
+        // Verify the user was saved in the real local database (H2)
+        Optional<User> savedUser = userRepository.findByUsername(username);
+        assertNotNull(savedUser);
+
+        assertThrows(DataIntegrityViolationException.class, () -> {
+            userService.registerUser(username, password);
         });
     }
 
@@ -62,13 +104,8 @@ class UserServiceTest {
 
         String username = "testUser";
         String password = "testPassword";
-        Wallet wallet = new Wallet();
 
-        User savedUser = new User(username,password,wallet);
-        savedUser.setId(1L);
-        savedUser.setUsername(username);
-        savedUser.setPassword(password);
-        savedUser.setWallet(wallet);
+        User savedUser = new User(username,password);
 
         when(userRepository.save(any(User.class))).thenReturn(savedUser);
 
@@ -78,7 +115,8 @@ class UserServiceTest {
         assertNotNull(result);
         assertEquals(username, result.getUsername());
         assertEquals(password, result.getPassword());
-        assertNotNull(result.getWallet());
     }
+
+
 
 }

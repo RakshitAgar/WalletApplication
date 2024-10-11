@@ -1,5 +1,6 @@
 package com.example.WalletApplication.entity;
 
+import com.example.WalletApplication.Exceptions.NotSufficientBalance;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -20,21 +21,73 @@ class WalletTest {
     }
 
     @Test
-    public void testWalletSetBalance() {
+    public void testWalletDepositExceptionWhenDepositZeroAmount() {
         Wallet wallet = new Wallet();
-        wallet.setBalance(100.0);
 
+        assertEquals(0.0, wallet.getBalance());
+        assertThrows(IllegalArgumentException.class, () -> {
+            wallet.deposit(0);
+        });
+    }
+
+    @Test
+    public void testWalletDepositExceptionWhenDepositNegativeAmount() {
+        Wallet wallet = new Wallet();
+
+        assertEquals(0.0, wallet.getBalance());
+        assertThrows(IllegalArgumentException.class, () -> {
+            wallet.deposit(-10);
+        });
+    }
+
+    @Test
+    public void testWalletDepositExceptionWhenDepositPositiveAmount() {
+        Wallet wallet = new Wallet();
+
+        assertEquals(0.0, wallet.getBalance());
+        wallet.deposit(100);
         assertEquals(100.0, wallet.getBalance());
     }
 
     @Test
-    public void testTwoWalletCreation() {
-        Wallet wallet1 = new Wallet();
-        Wallet wallet2 = new Wallet();
+    public void testWalletWithDrawlExceptionWhenDepositNegativeAmount() {
+        Wallet wallet = new Wallet();
 
-        wallet1.setBalance(100.0);
-        wallet2.setBalance(101.0);
+        assertEquals(0.0, wallet.getBalance());
+        assertThrows(IllegalArgumentException.class, () -> {
+            wallet.withdraw(-10);
+        });
+    }
 
-        assertNotEquals(wallet1, wallet2);
+    @Test
+    public void testWalletWithDrawlExceptionWhenDepositZeroAmount() {
+        Wallet wallet = new Wallet();
+
+        assertEquals(0.0, wallet.getBalance());
+        assertThrows(IllegalArgumentException.class, () -> {
+            wallet.withdraw(0);
+        });
+    }
+
+    @Test
+    public void testWalletWithDrawlExceptionWhenDepositAmountMoreThanAvailable() {
+        Wallet wallet = new Wallet();
+
+        assertEquals(0.0, wallet.getBalance());
+        wallet.deposit(100);
+        assertThrows(NotSufficientBalance.class, () -> {
+            wallet.withdraw(200);
+        });
+    }
+
+    @Test
+    public void testWalletWithDrawlExceptionWhenDepositAmountLessThanAvailable() {
+        Wallet wallet = new Wallet();
+
+        assertEquals(0.0, wallet.getBalance());
+        wallet.deposit(100);
+
+        wallet.withdraw(20);
+        assertEquals(80.0, wallet.getBalance());
     }
 }

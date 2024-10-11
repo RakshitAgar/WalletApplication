@@ -1,27 +1,42 @@
 package com.example.WalletApplication.entity;
 
 import jakarta.persistence.*;
-import lombok.Data;
 import lombok.Getter;
-import lombok.Setter;
 
 @Entity
-@Setter
+@Table(name = "users")
 @Getter
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(unique = true, nullable = false)
     private String username;
     private String password;
 
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    @OneToOne(cascade = CascadeType.ALL)
     private Wallet wallet;
 
-    public User(String username, String password, Wallet wallet) {
+    public User(String username, String password) {
+        if(username == null || password == null || username.isBlank() || password.isBlank()) {
+            throw new IllegalArgumentException("Username and password cannot be null or blank");
+        }
         this.username = username;
         this.password = password;
-        this.wallet = wallet;
+        initializeWallet();
+    }
+
+    private void initializeWallet() {
+        this.wallet = new Wallet();
+    }
+
+    public void deposit(Double amount) {
+        wallet.deposit(amount);
+    }
+
+    public void withdraw(Double amount) {
+        wallet.withdraw(amount);
     }
 
     public User() {

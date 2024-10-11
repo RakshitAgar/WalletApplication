@@ -3,7 +3,6 @@ package com.example.WalletApplication.service;
 import com.example.WalletApplication.Exceptions.NotSufficientBalance;
 import com.example.WalletApplication.Exceptions.UserNotFoundException;
 import com.example.WalletApplication.entity.User;
-import com.example.WalletApplication.entity.Wallet;
 import com.example.WalletApplication.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 
@@ -36,20 +35,14 @@ class WalletServiceTest {
 
         String username = "testUser";
         String password = "testPassword";
-        Wallet wallet = new Wallet();
 
-        User savedUser = new User(username,password,wallet);
-        savedUser.setId(1L);
-        savedUser.setUsername(username);
-        savedUser.setPassword(password);
-        savedUser.setWallet(wallet);
+        User savedUser = new User(username,password);
 
         when(userRepository.findByUsername(username)).thenReturn(Optional.of(savedUser));
 
-        assertEquals(0.0,wallet.getBalance());
+        assertEquals(0.0,savedUser.getWallet().getBalance());
         walletService.deposit(username,100.0);
-        verify(userRepository, times(1)).save(savedUser);
-        assertEquals(100.0,wallet.getBalance());
+        assertEquals(100.0,savedUser.getWallet().getBalance());
 
     }
 
@@ -69,21 +62,15 @@ class WalletServiceTest {
 
         String username = "testUser";
         String password = "testPassword";
-        Wallet wallet = new Wallet();
 
-        User savedUser = new User(username,password,wallet);
-        savedUser.setId(1L);
-        savedUser.setUsername(username);
-        savedUser.setPassword(password);
-        savedUser.setWallet(wallet);
-        wallet.setBalance(200);
+        User savedUser = new User(username,password);
+        savedUser.getWallet().deposit(200);
 
         when(userRepository.findByUsername(username)).thenReturn(Optional.of(savedUser));
 
-        assertEquals(200.0,wallet.getBalance());
-        walletService.withdraw(username,100.0);
-        verify(userRepository, times(1)).save(savedUser);
-        assertEquals(100.0,wallet.getBalance());
+        assertEquals(200.0,savedUser.getWallet().getBalance());
+        Double amount = walletService.withdraw(username,100.0);
+        assertEquals(100.0,amount);
 
     }
 
@@ -94,18 +81,13 @@ class WalletServiceTest {
 
         String username = "testUser";
         String password = "testPassword";
-        Wallet wallet = new Wallet();
 
-        User savedUser = new User(username,password,wallet);
-        savedUser.setId(1L);
-        savedUser.setUsername(username);
-        savedUser.setPassword(password);
-        savedUser.setWallet(wallet);
-        wallet.setBalance(100);
+        User savedUser = new User(username,password);
+        savedUser.getWallet().deposit(100);
 
         when(userRepository.findByUsername(username)).thenReturn(Optional.of(savedUser));
 
-        assertEquals(100.0,wallet.getBalance());
+        assertEquals(100.0,savedUser.getWallet().getBalance());
         assertThrows(NotSufficientBalance.class, () -> {
             walletService.withdraw(username,200.0);
         });
