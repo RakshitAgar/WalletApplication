@@ -31,14 +31,6 @@ public class User {
         this.wallet = new Wallet();
     }
 
-    public void deposit(Double amount) {
-        wallet.deposit(amount);
-    }
-
-    public void withdraw(Double amount) {
-        wallet.withdraw(amount);
-    }
-
     public User() {
     }
 }

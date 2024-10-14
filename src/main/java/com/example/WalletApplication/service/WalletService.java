@@ -19,7 +19,7 @@ public class WalletService {
     public void deposit(Long userId, Double amount) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
-        user.deposit(amount);
+        user.getWallet().deposit(amount);
     }
 
     @Transactional
@@ -27,7 +27,7 @@ public class WalletService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
         try {
-            user.withdraw(amount);
+            user.getWallet().withdraw(amount);
             return amount;
         } catch (IllegalStateException e) {
             throw new NotSufficientBalance("Not sufficient balance");
