@@ -16,15 +16,15 @@ public class WalletService {
     }
 
     @Transactional
-    public void deposit(String userName, Double amount) {
-        User user = userRepository.findByUsername(userName)
+    public void deposit(Long userId, Double amount) {
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
         user.deposit(amount);
     }
 
     @Transactional
-    public Double withdraw(String userName, Double amount) {
-        User user = userRepository.findByUsername(userName)
+    public Double withdraw(Long userId, Double amount) {
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
         try {
             user.withdraw(amount);
