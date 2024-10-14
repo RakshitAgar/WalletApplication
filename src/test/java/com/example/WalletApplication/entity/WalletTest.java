@@ -90,4 +90,36 @@ class WalletTest {
         wallet.withdraw(20);
         assertEquals(80.0, wallet.getBalance());
     }
+
+    @Test
+    public void testWalletTransfer() {
+        Wallet senderWallet = new Wallet();
+        Wallet recipientWallet = new Wallet();
+
+        senderWallet.deposit(100);
+        assertEquals(100.0, senderWallet.getBalance());
+        assertEquals(0.0, recipientWallet.getBalance());
+
+        senderWallet.transfer(50, recipientWallet);
+
+        assertEquals(50.0, senderWallet.getBalance());
+        assertEquals(50.0, recipientWallet.getBalance());
+    }
+
+    @Test
+    public void testWalletTransferExceptionWhenAmountMoreThanAvailable() {
+        Wallet senderWallet = new Wallet();
+        Wallet recipientWallet = new Wallet();
+
+        senderWallet.deposit(100);
+        assertEquals(100.0, senderWallet.getBalance());
+        assertEquals(0.0, recipientWallet.getBalance());
+
+        assertThrows(NotSufficientBalance.class, () -> {
+            senderWallet.transfer(200, recipientWallet);
+        });
+
+        assertEquals(100.0, senderWallet.getBalance());
+        assertEquals(0.0, recipientWallet.getBalance());
+    }
 }
