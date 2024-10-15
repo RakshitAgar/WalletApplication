@@ -1,34 +1,35 @@
 package com.example.WalletApplication.controller;
 
-import com.example.WalletApplication.dto.TransactionRequestDTO;
+import com.example.WalletApplication.dto.TransferRequestDTO;
+import com.example.WalletApplication.dto.TransferTransactionRequestDTO;
+import com.example.WalletApplication.entity.Transaction;
+import com.example.WalletApplication.service.TransactionService;
 import com.example.WalletApplication.service.UserService;
-import com.example.WalletApplication.service.WalletService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
-
-import org.springframework.web.bind.annotation.PathVariable;
 
 @RestController
 @RequestMapping("user/{userId}/wallet/{walletId}")
 @CrossOrigin
-public class WalletController {
+public class TransactionController {
 
     @Autowired
     private UserService userService;
 
     @Autowired
-    private WalletService walletService;
+    private TransactionService transactionService;
 
-    @PostMapping("/deposit")
-    public ResponseEntity<?> deposit(@PathVariable Long userId, @PathVariable Long walletId, @RequestBody TransactionRequestDTO depositRequest) {
+    @PostMapping("/transfer")
+    public ResponseEntity<?> transfer(@PathVariable Long userId, @PathVariable Long walletId, @RequestBody TransferTransactionRequestDTO transferRequest) {
         try {
-            Double amount = depositRequest.getAmount();
-            walletService.deposit(userId, amount);
+            Double amount = transferRequest.getAmount();
+            transactionService.transfer(userId, transferRequest.getReceiverId(), amount);
             return ResponseEntity.ok().body(Map.of(
-                    "message", "Amount deposited successfully",
+                    "message", "Amount transferred successfully",
                     "amount", amount
             ));
         } catch (IllegalArgumentException e) {
@@ -38,15 +39,11 @@ public class WalletController {
         }
     }
 
-    @PostMapping("/withdraw")
-    public ResponseEntity<?> withdraw(@PathVariable Long userId, @PathVariable Long walletId, @RequestBody TransactionRequestDTO withdrawRequest) {
+    @GetMapping("/transfer")
+    public ResponseEntity<?> getTransactionHistory(@PathVariable Long userId, @PathVariable Long walletId, @RequestBody TransferRequestDTO transferRequest) {
         try {
-            Double amount = withdrawRequest.getAmount();
-            Double withdrawnAmount = walletService.withdraw(userId, amount);
-            return ResponseEntity.ok().body(Map.of(
-                    "message", "Amount withdrawn successfully",
-                    "withdrawnAmount", withdrawnAmount
-            ));
+            List<Transaction> transactions = transactionService.getTransactionHistory(userId);
+            return ResponseEntity.ok(transactions);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         } catch (Exception e) {

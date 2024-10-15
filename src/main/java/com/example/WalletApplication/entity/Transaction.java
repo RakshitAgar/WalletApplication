@@ -21,10 +21,10 @@ public class Transaction {
     private TransactionType type;
     private Long recipientWalletId;
 
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "wallet_id")
-//    @JsonIgnore
-//    private Wallet wallet;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "wallet_id")
+    @JsonIgnore
+    private Wallet wallet;
 
     public Transaction(double amount, TransactionType type) {
         this.amount = amount;

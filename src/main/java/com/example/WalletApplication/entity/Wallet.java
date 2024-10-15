@@ -54,6 +54,6 @@ public class Wallet {
         this.balance -= amount;
         recipient.balance += amount;
         this.transactions.add(new Transaction(amount, TransactionType.TRANSFER, recipient.getId()));
-        recipient.transactions.add(new Transaction(amount, TransactionType.TRANSFER, this.getId()));
+        recipient.transactions.add(new Transaction(amount, TransactionType.DEPOSIT, this.getId()));
     }
 }
