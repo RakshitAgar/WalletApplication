@@ -1,5 +1,6 @@
 package com.example.WalletApplication.controller;
 
+import com.example.WalletApplication.config.SecurityConfig;
 import com.example.WalletApplication.dto.TransactionRequestDTO;
 import com.example.WalletApplication.service.UserService;
 import com.example.WalletApplication.service.WalletService;
@@ -8,6 +9,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -18,6 +20,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @ExtendWith(MockitoExtension.class)
+@Import(SecurityConfig.class)
 public class WalletControllerTest {
 
     private MockMvc mockMvc;

@@ -24,6 +24,7 @@ public class TransactionService {
         User receiver = userRepository.findById(receiverId)
                 .orElseThrow(() -> new UserNotFoundException("Receiver not found"));
         try {
+
             sender.getWallet().transfer(amount, receiver.getWallet());
             userRepository.save(sender);
             userRepository.save(receiver);
