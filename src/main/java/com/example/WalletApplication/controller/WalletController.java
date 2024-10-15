@@ -1,6 +1,7 @@
 package com.example.WalletApplication.controller;
 
 import com.example.WalletApplication.dto.TransactionRequestDTO;
+import com.example.WalletApplication.dto.TransferRequestDTO;
 import com.example.WalletApplication.dto.TransferTransactionRequestDTO;
 import com.example.WalletApplication.entity.Transaction;
 import com.example.WalletApplication.service.UserService;
@@ -11,6 +12,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+
+import static org.postgresql.jdbcurlresolver.PgPassParser.getPassword;
 
 @RestController
 @RequestMapping("/wallet")
@@ -74,11 +77,11 @@ public class WalletController {
         }
     }
 
-    @GetMapping("/transactions")
-    public ResponseEntity<?> getTransactionHistory(@RequestParam Long userId, @RequestParam String password) {
+    @GetMapping("/transfers")
+    public ResponseEntity<?> getTransactionHistory(@RequestBody TransferRequestDTO transferRequest) {
         try {
-            userService.authenticateUser(userId, password);
-            List<Transaction> transactions = walletService.getTransactionHistory(userId);
+            userService.authenticateUser(transferRequest.getUserId(), transferRequest.getPassword());
+            List<Transaction> transactions = walletService.getTransactionHistory(transferRequest.getUserId());
             return ResponseEntity.ok(transactions);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());

@@ -18,9 +18,9 @@ public class UserService {
 
     @Transactional
     public User registerUser(String username, String password) {
-//        if(username == null || username.isBlank() || password == null || password.isBlank()) {
-//            throw new InvalidUserRegistrationCredentials("Username and password cannot be empty");
-//        }
+        if(username == null || username.isBlank() || password == null || password.isBlank()) {
+            throw new InvalidUserRegistrationCredentials("Username and password cannot be empty");
+        }
         return userRepository.save(new User(username, password));
     }
 

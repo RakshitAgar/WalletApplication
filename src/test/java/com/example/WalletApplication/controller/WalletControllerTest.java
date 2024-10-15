@@ -1,6 +1,9 @@
 package com.example.WalletApplication.controller;
 
 import com.example.WalletApplication.dto.TransactionRequestDTO;
+import com.example.WalletApplication.dto.TransferTransactionRequestDTO;
+import com.example.WalletApplication.entity.Transaction;
+import com.example.WalletApplication.enums.TransactionType;
 import com.example.WalletApplication.service.UserService;
 import com.example.WalletApplication.service.WalletService;
 import org.junit.jupiter.api.Test;
@@ -12,9 +15,12 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import java.util.List;
+
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -161,5 +167,56 @@ public class WalletControllerTest {
 
         verify(userService, times(1)).authenticateUser(999L, "testPassword");
         verify(walletService, times(0)).withdraw(anyLong(), anyDouble());
+    }
+
+    @Test
+    public void testTransfer_Success() throws Exception {
+        mockMvc = MockMvcBuilders.standaloneSetup(walletController).build();
+
+        TransferTransactionRequestDTO request = new TransferTransactionRequestDTO();
+        request.setUserId(1L);
+        request.setReceiverId(2L);
+        request.setAmount(50.0);
+        request.setPassword("testPassword");
+
+        doNothing().when(userService).authenticateUser(anyLong(), anyString());
+        doNothing().when(walletService).transfer(anyLong(), anyLong(), anyDouble());
+
+        mockMvc.perform(post("/wallet/transfer")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"userId\":1,\"receiverId\":2,\"amount\":50.0,\"password\":\"testPassword\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Amount transferred successfully"))
+                .andExpect(jsonPath("$.amount").value(50.0));
+
+        verify(userService, times(1)).authenticateUser(1L, "testPassword");
+        verify(walletService, times(1)).transfer(1L, 2L, 50.0);
+    }
+
+    @Test
+    public void testGetTransactionHistory_Success() throws Exception {
+        mockMvc = MockMvcBuilders.standaloneSetup(walletController).build();
+
+        Long userId = 1L;
+        String password = "testPassword";
+        List<Transaction> transactions = List.of(
+                new Transaction(100.0, TransactionType.DEPOSIT),
+                new Transaction(-50.0, TransactionType.WITHDRAWAL)
+        );
+
+        doNothing().when(userService).authenticateUser(anyLong(), anyString());
+        when(walletService.getTransactionHistory(anyLong())).thenReturn(transactions);
+
+        mockMvc.perform(get("/wallet/transfers")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"userId\":1,\"password\":\"testPassword\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].amount").value(100.0))
+                .andExpect(jsonPath("$[0].type").value("DEPOSIT"))
+                .andExpect(jsonPath("$[1].amount").value(-50.0))
+                .andExpect(jsonPath("$[1].type").value("WITHDRAWAL"));
+
+        verify(userService, times(1)).authenticateUser(userId, password);
+        verify(walletService, times(1)).getTransactionHistory(userId);
     }
 }
