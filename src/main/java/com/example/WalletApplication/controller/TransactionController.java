@@ -1,8 +1,8 @@
 package com.example.WalletApplication.controller;
 
-import com.example.WalletApplication.dto.TransferRequestDTO;
+import com.example.WalletApplication.Exceptions.UnAuthorisedUserException;
+import com.example.WalletApplication.Exceptions.UnAuthorisedWalletException;
 import com.example.WalletApplication.dto.TransferTransactionRequestDTO;
-import com.example.WalletApplication.entity.Transaction;
 import com.example.WalletApplication.service.TransactionService;
 import com.example.WalletApplication.service.UserService;
 import com.example.WalletApplication.service.WalletService;
@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -38,21 +39,35 @@ public class TransactionController {
             ));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().body("An error occurred: " + e.getMessage());
+        } catch (UnAuthorisedUserException e) {
+            return ResponseEntity.status(403).body("User not authorized");
+        }catch (UnAuthorisedWalletException e) {
+            return ResponseEntity.status(403).body("User not authorized for this Wallet");
         }
     }
 
     @GetMapping("/transfers")
-    public ResponseEntity<?> getTransactionHistory(@PathVariable Long userId, @PathVariable Long walletId, @RequestBody TransferRequestDTO transferRequest) {
+    public ResponseEntity<?> getTransactionHistory(
+            @PathVariable Long userId,
+            @PathVariable Long walletId,
+            @RequestParam(required = false) String type) {
         try {
             walletService.isUserAuthorized(userId, walletId);
-            List<Transaction> transactions = transactionService.getTransactionHistory(userId);
+
+            List<Object> transactions;
+            if (type != null) {
+                transactions = new ArrayList<>(transactionService.getTransactionHistoryByType(walletId, type));
+            } else {
+                transactions = transactionService.getTransactionHistory(walletId);
+            }
+
             return ResponseEntity.ok(transactions);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().body("An error occurred: " + e.getMessage());
+        } catch (UnAuthorisedUserException e) {
+            return ResponseEntity.status(403).body("User not authorized");
+        }catch (UnAuthorisedWalletException e) {
+            return ResponseEntity.status(403).body("User not authorized for this Wallet");
         }
     }
 

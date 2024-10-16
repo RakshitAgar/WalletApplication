@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @Entity
 @Getter
 @NoArgsConstructor
-public class Transaction {
+public class TransferTransaction {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -23,14 +23,18 @@ public class Transaction {
     private TransactionType type;
 
     @ManyToOne
-    @JoinColumn(name = "wallet_id", nullable = false)
-    @JsonIgnore
-    private Wallet wallet;
+    @JoinColumn(name = "sender_wallet_id", nullable = false)
+    private Wallet senderWallet;
 
-    public Transaction(double amount, TransactionType type, Wallet wallet) {
+    @ManyToOne
+    @JoinColumn(name = "recipient_wallet_id", nullable = false)
+    private Wallet recipientWallet;
+
+    public TransferTransaction(double amount, TransactionType type, Wallet senderWallet , Wallet receiverWallet) {
         this.amount = amount;
         this.type = type;
-        this.wallet = wallet;
+        this.senderWallet = senderWallet;
+        this.recipientWallet = receiverWallet;
         this.timestamp = LocalDateTime.now();
     }
 }

@@ -1,5 +1,7 @@
 package com.example.WalletApplication.controller;
 
+import com.example.WalletApplication.Exceptions.UnAuthorisedUserException;
+import com.example.WalletApplication.Exceptions.UnAuthorisedWalletException;
 import com.example.WalletApplication.dto.TransactionRequestDTO;
 import com.example.WalletApplication.service.UserService;
 import com.example.WalletApplication.service.WalletService;
@@ -36,8 +38,10 @@ public class WalletController {
             ));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().body("An error occurred: " + e.getMessage());
+        } catch (UnAuthorisedUserException e) {
+            return ResponseEntity.status(403).body("User not authorized");
+        }catch (UnAuthorisedWalletException e) {
+            return ResponseEntity.status(403).body("User not authorized for this Wallet");
         }
     }
 
@@ -53,8 +57,10 @@ public class WalletController {
             ));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().body("An error occurred: " + e.getMessage());
+        } catch (UnAuthorisedUserException e) {
+            return ResponseEntity.status(403).body("User not authorized");
+        } catch (UnAuthorisedWalletException e) {
+            return ResponseEntity.status(403).body("User not authorized for this Wallet");
         }
     }
 }

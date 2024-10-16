@@ -1,6 +1,8 @@
 package com.example.WalletApplication.controller;
 
+import com.example.WalletApplication.Exceptions.CustomExceptionHandler;
 import com.example.WalletApplication.Exceptions.UnAuthorisedUserException;
+import com.example.WalletApplication.Exceptions.UnAuthorisedWalletException;
 import com.example.WalletApplication.config.SecurityConfig;
 import com.example.WalletApplication.dto.TransactionRequestDTO;
 import com.example.WalletApplication.service.UserService;
@@ -57,7 +59,7 @@ public class WalletControllerTest {
     }
 
     @Test
-    public void testDeposit_UnAuthorisedUser() throws Exception {
+    public void testDeposit_UnAuthorisedUserId() throws Exception {
         mockMvc = MockMvcBuilders.standaloneSetup(walletController).build();
 
         doThrow(new UnAuthorisedUserException("User not authorized"))
@@ -66,11 +68,29 @@ public class WalletControllerTest {
         mockMvc.perform(post("/user/1/wallet/1/deposit")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"amount\":100.0}"))
-                .andExpect(status().isInternalServerError())
-                .andExpect(content().string("An error occurred: User not authorized"));
+                .andExpect(status().isForbidden())
+                .andExpect(content().string("User not authorized"));
 
         verify(walletService, times(1)).isUserAuthorized(anyLong(), anyLong());
     }
+
+    @Test
+    public void testDeposit_InvalidWalletId() throws Exception {
+        mockMvc = MockMvcBuilders.standaloneSetup(walletController).build();
+
+        doThrow(new UnAuthorisedWalletException("User not authorized for this Wallet"))
+                .when(walletService).isUserAuthorized(anyLong(), anyLong());
+
+        mockMvc.perform(post("/user/1/wallet/999/deposit")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"amount\":100.0}"))
+                .andExpect(status().isForbidden())
+                .andExpect(content().string("User not authorized for this Wallet"));
+
+        verify(walletService, times(1)).isUserAuthorized(anyLong(), anyLong());
+    }
+
+
 
     @Test
     public void testWithdraw_Success() throws Exception {
@@ -111,6 +131,7 @@ public class WalletControllerTest {
     }
 
 
+
     @Test
     public void testWithdraw_Failure_InvalidUserId() throws Exception {
         mockMvc = MockMvcBuilders.standaloneSetup(walletController).build();
@@ -136,8 +157,24 @@ public class WalletControllerTest {
         mockMvc.perform(post("/user/999/wallet/1/withdraw")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"userId\":999,\"amount\":50.0}"))
-                .andExpect(status().isInternalServerError())
-                .andExpect(content().string("An error occurred: User not authorized"));
+                .andExpect(status().isForbidden())
+                .andExpect(content().string("User not authorized"));
+
+        verify(walletService, times(1)).isUserAuthorized(anyLong(), anyLong());
+    }
+
+    @Test
+    public void testWithdraw_FailureInValidWalletID() throws Exception {
+        mockMvc = MockMvcBuilders.standaloneSetup(walletController).build();
+
+        doThrow(new UnAuthorisedWalletException("User not authorized for this Wallet"))
+                .when(walletService).isUserAuthorized(anyLong(), anyLong());
+
+        mockMvc.perform(post("/user/999/wallet/1/withdraw")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"userId\":999,\"amount\":50.0}"))
+                .andExpect(status().isForbidden())
+                .andExpect(content().string("User not authorized for this Wallet"));
 
         verify(walletService, times(1)).isUserAuthorized(anyLong(), anyLong());
     }

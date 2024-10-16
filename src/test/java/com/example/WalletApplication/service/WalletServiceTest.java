@@ -2,15 +2,13 @@ package com.example.WalletApplication.service;
 
 import com.example.WalletApplication.Exceptions.NotSufficientBalance;
 import com.example.WalletApplication.Exceptions.UserNotFoundException;
-import com.example.WalletApplication.entity.Transaction;
 import com.example.WalletApplication.entity.User;
+import com.example.WalletApplication.repository.TransactionRepository;
 import com.example.WalletApplication.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -28,16 +26,21 @@ class WalletServiceTest {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    TransactionRepository transactionRepository;
+
     @Test
     public void testWalletServiceCreation() {
         UserRepository userRepository = mock(UserRepository.class);
-        assertDoesNotThrow(() -> new WalletService(userRepository));
+        TransactionRepository transactionRepository = mock(TransactionRepository.class);
+        assertDoesNotThrow(() -> new WalletService(userRepository, transactionRepository));
     }
 
     @Test
     public void testWalletServiceDepositExceptionUserNotFound() {
         UserRepository userRepository = mock(UserRepository.class);
-        WalletService walletService = new WalletService(userRepository);
+        TransactionRepository transactionRepository = mock(TransactionRepository.class);
+        WalletService walletService = new WalletService(userRepository,transactionRepository);
         assertThrows(UserNotFoundException.class, () -> {
             walletService.deposit(1L, 100.0);
         });
@@ -46,7 +49,8 @@ class WalletServiceTest {
     @Test
     public void testWalletServiceDepositWhenUserFound() {
         UserRepository userRepository = mock(UserRepository.class);
-        WalletService walletService = new WalletService(userRepository);
+        TransactionRepository transactionRepository = mock(TransactionRepository.class);
+        WalletService walletService = new WalletService(userRepository,transactionRepository);
 
         Long userId = 1L;
         User savedUser = new User("testUser", "testPassword");
@@ -61,7 +65,8 @@ class WalletServiceTest {
     @Test
     public void testWalletServiceWithdrawExceptionUserNotFound() {
         UserRepository userRepository = mock(UserRepository.class);
-        WalletService walletService = new WalletService(userRepository);
+        TransactionRepository transactionRepository = mock(TransactionRepository.class);
+        WalletService walletService = new WalletService(userRepository,transactionRepository);
         assertThrows(UserNotFoundException.class, () -> {
             walletService.withdraw(1L, 100.0);
         });
@@ -70,7 +75,8 @@ class WalletServiceTest {
     @Test
     public void testWalletServiceWithdrawWithSufficientBalance() {
         UserRepository userRepository = mock(UserRepository.class);
-        WalletService walletService = new WalletService(userRepository);
+        TransactionRepository transactionRepository = mock(TransactionRepository.class);
+        WalletService walletService = new WalletService(userRepository,transactionRepository);
 
         Long userId = 1L;
         User savedUser = new User("testUser", "testPassword");
@@ -86,7 +92,8 @@ class WalletServiceTest {
     @Test
     public void testWalletServiceWithdrawWithInsufficientBalance() {
         UserRepository userRepository = mock(UserRepository.class);
-        WalletService walletService = new WalletService(userRepository);
+        TransactionRepository transactionRepository = mock(TransactionRepository.class);
+        WalletService walletService = new WalletService(userRepository,transactionRepository);
 
         Long userId = 1L;
         User savedUser = new User("testUser", "testPassword");
