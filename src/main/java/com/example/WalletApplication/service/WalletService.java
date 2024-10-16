@@ -1,10 +1,14 @@
 package com.example.WalletApplication.service;
 
+import com.example.WalletApplication.Exceptions.InvalidUserException;
 import com.example.WalletApplication.Exceptions.NotSufficientBalance;
+import com.example.WalletApplication.Exceptions.UnAuthorisedUserException;
 import com.example.WalletApplication.Exceptions.UserNotFoundException;
 import com.example.WalletApplication.entity.Transaction;
 import com.example.WalletApplication.entity.User;
 import com.example.WalletApplication.repository.UserRepository;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,6 +20,15 @@ public class WalletService {
 
     public WalletService(UserRepository userRepository) {
         this.userRepository = userRepository;
+    }
+
+    public void  isUserAuthorized(Long userId, Long walletId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String authenticatedUsername = authentication.getName();
+        User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("User not found"));
+        if (!user.getUsername().equals(authenticatedUsername) || !user.getWallet().getId().equals(walletId)){
+            throw new UnAuthorisedUserException("User not authorized");
+        }
     }
 
     @Transactional

@@ -5,6 +5,7 @@ import com.example.WalletApplication.service.UserService;
 import com.example.WalletApplication.service.WalletService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -23,8 +24,10 @@ public class WalletController {
     private WalletService walletService;
 
     @PostMapping("/deposit")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> deposit(@PathVariable Long userId, @PathVariable Long walletId, @RequestBody TransactionRequestDTO depositRequest) {
         try {
+            walletService.isUserAuthorized(userId, walletId);
             Double amount = depositRequest.getAmount();
             walletService.deposit(userId, amount);
             return ResponseEntity.ok().body(Map.of(
@@ -41,6 +44,7 @@ public class WalletController {
     @PostMapping("/withdraw")
     public ResponseEntity<?> withdraw(@PathVariable Long userId, @PathVariable Long walletId, @RequestBody TransactionRequestDTO withdrawRequest) {
         try {
+            walletService.isUserAuthorized(userId, walletId);
             Double amount = withdrawRequest.getAmount();
             Double withdrawnAmount = walletService.withdraw(userId, amount);
             return ResponseEntity.ok().body(Map.of(

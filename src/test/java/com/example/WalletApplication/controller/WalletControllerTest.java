@@ -1,5 +1,6 @@
 package com.example.WalletApplication.controller;
 
+import com.example.WalletApplication.Exceptions.UnAuthorisedUserException;
 import com.example.WalletApplication.config.SecurityConfig;
 import com.example.WalletApplication.dto.TransactionRequestDTO;
 import com.example.WalletApplication.service.UserService;
@@ -56,6 +57,22 @@ public class WalletControllerTest {
     }
 
     @Test
+    public void testDeposit_UnAuthorisedUser() throws Exception {
+        mockMvc = MockMvcBuilders.standaloneSetup(walletController).build();
+
+        doThrow(new UnAuthorisedUserException("User not authorized"))
+                .when(walletService).isUserAuthorized(anyLong(), anyLong());
+
+        mockMvc.perform(post("/user/1/wallet/1/deposit")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"amount\":100.0}"))
+                .andExpect(status().isInternalServerError())
+                .andExpect(content().string("An error occurred: User not authorized"));
+
+        verify(walletService, times(1)).isUserAuthorized(anyLong(), anyLong());
+    }
+
+    @Test
     public void testWithdraw_Success() throws Exception {
         mockMvc = MockMvcBuilders.standaloneSetup(walletController).build();
 
@@ -107,5 +124,21 @@ public class WalletControllerTest {
                 .andExpect(content().string("User not found"));
 
         verify(walletService, times(1)).withdraw(eq(999L), eq(50.0));
+    }
+
+    @Test
+    public void testWithdraw_Failure_UnAuthorisedUser() throws Exception {
+        mockMvc = MockMvcBuilders.standaloneSetup(walletController).build();
+
+        doThrow(new UnAuthorisedUserException("User not authorized"))
+                .when(walletService).isUserAuthorized(anyLong(), anyLong());
+
+        mockMvc.perform(post("/user/999/wallet/1/withdraw")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"userId\":999,\"amount\":50.0}"))
+                .andExpect(status().isInternalServerError())
+                .andExpect(content().string("An error occurred: User not authorized"));
+
+        verify(walletService, times(1)).isUserAuthorized(anyLong(), anyLong());
     }
 }
