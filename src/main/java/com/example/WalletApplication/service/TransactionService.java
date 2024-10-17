@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -75,6 +76,27 @@ public class TransactionService {
         }
         return transaction;
     }
+
+    public List<Object> sortTransactions(List<Object> transactions, String sortByTime) {
+    Comparator<Object> comparator = Comparator.comparing(transaction -> {
+        if (transaction instanceof Transaction) {
+            return ((Transaction) transaction).getTimestamp();
+        } else if (transaction instanceof TransferTransactionDTO) {
+            return ((TransferTransactionDTO) transaction).getTimestamp();
+        } else {
+            return null;
+        }
+    });
+
+    if (sortByTime.equalsIgnoreCase("desc")) {
+        comparator = comparator.reversed();
+    }
+
+    transactions.sort(comparator);
+    return transactions;
+}
+
+
 
     private TransferTransactionDTO convertToDTO(TransferTransaction transferTransaction) {
         return new TransferTransactionDTO(

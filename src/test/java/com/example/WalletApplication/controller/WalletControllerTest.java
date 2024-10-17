@@ -48,7 +48,7 @@ public class WalletControllerTest {
 
         doNothing().when(walletService).deposit(anyLong(), anyDouble());
 
-        mockMvc.perform(post("/user/1/wallet/1/deposit")
+        mockMvc.perform(post("/users/1/wallets/1/deposits")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"userId\":1,\"amount\":100.0,\"password\":\"testPassword\"}"))
                 .andExpect(status().isOk())
@@ -65,7 +65,7 @@ public class WalletControllerTest {
         doThrow(new UnAuthorisedUserException("User not authorized"))
                 .when(walletService).isUserAuthorized(anyLong(), anyLong());
 
-        mockMvc.perform(post("/user/1/wallet/1/deposit")
+        mockMvc.perform(post("/users/1/wallets/1/deposits")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"amount\":100.0}"))
                 .andExpect(status().isForbidden())
@@ -81,7 +81,7 @@ public class WalletControllerTest {
         doThrow(new UnAuthorisedWalletException("User not authorized for this Wallet"))
                 .when(walletService).isUserAuthorized(anyLong(), anyLong());
 
-        mockMvc.perform(post("/user/1/wallet/999/deposit")
+        mockMvc.perform(post("/users/1/wallets/999/deposits")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"amount\":100.0}"))
                 .andExpect(status().isForbidden())
@@ -103,7 +103,7 @@ public class WalletControllerTest {
 
         when(walletService.withdraw(anyLong(), anyDouble())).thenReturn(50.0);
 
-        mockMvc.perform(post("/user/1/wallet/1/withdraw")
+        mockMvc.perform(post("/users/1/wallets/1/withdrawals")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"userId\":1,\"amount\":50.0,\"password\":\"testPassword\"}"))
                 .andExpect(status().isOk())
@@ -121,7 +121,7 @@ public class WalletControllerTest {
         doThrow(new IllegalArgumentException("User not found"))
                 .when(walletService).deposit(anyLong(), anyDouble());
 
-        mockMvc.perform(post("/user/999/wallet/1/deposit")
+        mockMvc.perform(post("/users/999/wallets/1/deposits")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"amount\":100.0}"))
                 .andExpect(status().isBadRequest())
@@ -138,7 +138,7 @@ public class WalletControllerTest {
 
         when(walletService.withdraw(anyLong(), anyDouble())).thenThrow(new IllegalArgumentException("User not found"));
 
-        mockMvc.perform(post("/user/999/wallet/1/withdraw")
+        mockMvc.perform(post("/users/999/wallets/1/withdrawals")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"userId\":999,\"amount\":50.0}"))
                 .andExpect(status().isBadRequest())
@@ -154,7 +154,7 @@ public class WalletControllerTest {
         doThrow(new UnAuthorisedUserException("User not authorized"))
                 .when(walletService).isUserAuthorized(anyLong(), anyLong());
 
-        mockMvc.perform(post("/user/999/wallet/1/withdraw")
+        mockMvc.perform(post("/users/999/wallets/1/withdrawals")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"userId\":999,\"amount\":50.0}"))
                 .andExpect(status().isForbidden())
@@ -170,7 +170,7 @@ public class WalletControllerTest {
         doThrow(new UnAuthorisedWalletException("User not authorized for this Wallet"))
                 .when(walletService).isUserAuthorized(anyLong(), anyLong());
 
-        mockMvc.perform(post("/user/999/wallet/1/withdraw")
+        mockMvc.perform(post("/users/999/wallets/1/withdrawals")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"userId\":999,\"amount\":50.0}"))
                 .andExpect(status().isForbidden())

@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("user/{userId}/wallet/{walletId}")
+@RequestMapping("users/{userId}/wallets/{walletId}")
 @CrossOrigin
 public class TransactionController {
 
@@ -50,7 +50,8 @@ public class TransactionController {
     public ResponseEntity<?> getTransactionHistory(
             @PathVariable Long userId,
             @PathVariable Long walletId,
-            @RequestParam(required = false) List<String> type) {
+            @RequestParam(required = false) List<String> type,
+            @RequestParam(required = false, defaultValue = "asc") String sortByTime) {
         try {
             walletService.isUserAuthorized(userId, walletId);
 
@@ -60,10 +61,11 @@ public class TransactionController {
             } else {
                 transactions = transactionService.getTransactionHistory(walletId);
             }
+            transactions = transactionService.sortTransactions(transactions, sortByTime);
 
             return ResponseEntity.ok(transactions);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.status(500).body(e.getMessage());
         } catch (UnAuthorisedUserException e) {
             return ResponseEntity.status(403).body("User not authorized");
         }catch (UnAuthorisedWalletException e) {

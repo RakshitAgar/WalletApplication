@@ -46,7 +46,7 @@ class UserControllerTest {
         when(userService.registerUser(anyString(), anyString(), any(CurrencyType.class))).thenReturn(mockUser);
 
         // Act & Assert
-        mockMvc.perform(post("/user/register")
+        mockMvc.perform(post("/users/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"username\":\"testUser\",\"password\":\"testPassword\",\"currencyType\":\"USD\"}"))
                 .andExpect(status().isOk())
@@ -62,7 +62,7 @@ class UserControllerTest {
         when(userService.registerUser(anyString(), anyString(),any(CurrencyType.class))).thenThrow(new IllegalArgumentException("Invalid credentials"));
 
         // Act & Assert
-        mockMvc.perform(post("/user/register")
+        mockMvc.perform(post("/users/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"username\":\"\",\"password\":\"testPassword\",\"currencyType\":\"USD\"}"))
                 .andExpect(status().isBadRequest())

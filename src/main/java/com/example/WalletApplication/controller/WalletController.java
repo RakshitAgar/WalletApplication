@@ -15,7 +15,7 @@ import java.util.Map;
 import org.springframework.web.bind.annotation.PathVariable;
 
 @RestController
-@RequestMapping("user/{userId}/wallet/{walletId}")
+@RequestMapping("users/{userId}/wallets/{walletId}")
 @CrossOrigin
 public class WalletController {
 
@@ -25,7 +25,7 @@ public class WalletController {
     @Autowired
     private WalletService walletService;
 
-    @PostMapping("/deposit")
+    @PostMapping("/deposits")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> deposit(@PathVariable Long userId, @PathVariable Long walletId, @RequestBody TransactionRequestDTO depositRequest) {
         try {
@@ -45,7 +45,7 @@ public class WalletController {
         }
     }
 
-    @PostMapping("/withdraw")
+    @PostMapping("/withdrawals")
     public ResponseEntity<?> withdraw(@PathVariable Long userId, @PathVariable Long walletId, @RequestBody TransactionRequestDTO withdrawRequest) {
         try {
             walletService.isUserAuthorized(userId, walletId);

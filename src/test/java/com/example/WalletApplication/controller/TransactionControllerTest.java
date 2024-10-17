@@ -3,6 +3,7 @@ package com.example.WalletApplication.controller;
 import com.example.WalletApplication.Exceptions.UnAuthorisedUserException;
 import com.example.WalletApplication.Exceptions.UnAuthorisedWalletException;
 import com.example.WalletApplication.entity.Transaction;
+import com.example.WalletApplication.entity.TransferTransaction;
 import com.example.WalletApplication.entity.Wallet;
 import com.example.WalletApplication.enums.TransactionType;
 import com.example.WalletApplication.service.TransactionService;
@@ -17,6 +18,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -48,7 +50,7 @@ class TransactionControllerTest {
         doNothing().when(transactionService).transfer(anyLong(), anyLong(), anyDouble());
         doNothing().when(walletService).isUserAuthorized(anyLong(), anyLong());
 
-        mockMvc.perform(post("/user/1/wallet/1/transfers")
+        mockMvc.perform(post("/users/1/wallets/1/transfers")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"receiverId\":2,\"amount\":50.0}"))
                 .andExpect(status().isOk())
@@ -64,7 +66,7 @@ class TransactionControllerTest {
 
         doThrow(new UnAuthorisedUserException("User not authorized")).when(walletService).isUserAuthorized(anyLong(), anyLong());
 
-        mockMvc.perform(post("/user/1/wallet/1/transfers")
+        mockMvc.perform(post("/users/1/wallets/1/transfers")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"receiverId\":2,\"amount\":50.0}"))
                 .andExpect(status().isForbidden())
@@ -78,7 +80,7 @@ class TransactionControllerTest {
 
         doThrow(new UnAuthorisedWalletException("User not authorized for this Wallet")).when(walletService).isUserAuthorized(anyLong(), anyLong());
 
-        mockMvc.perform(post("/user/1/wallet/1/transfers")
+        mockMvc.perform(post("/users/1/wallets/1/transfers")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"receiverId\":2,\"amount\":50.0}"))
                 .andExpect(status().isForbidden())
@@ -100,8 +102,9 @@ class TransactionControllerTest {
 
         doNothing().when(walletService).isUserAuthorized(anyLong(), anyLong());
         when(transactionService.getTransactionHistory(anyLong())).thenReturn(transactions);
+        when(transactionService.sortTransactions(transactions, "asc")).thenReturn(transactions);
 
-        mockMvc.perform(get("/user/1/wallet/1/transfers")
+        mockMvc.perform(get("/users/1/wallets/1/transfers")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].amount").value(100.0))
@@ -118,7 +121,7 @@ class TransactionControllerTest {
 
         doThrow(new UnAuthorisedUserException("User not authorized")).when(walletService).isUserAuthorized(anyLong(), anyLong());
 
-        mockMvc.perform(get("/user/1/wallet/1/transfers")
+        mockMvc.perform(get("/users/1/wallets/1/transfers")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"userId\":1}"))
                 .andExpect(status().isForbidden())
@@ -133,7 +136,7 @@ class TransactionControllerTest {
 
         doThrow(new UnAuthorisedWalletException("User not authorized for this Wallet")).when(walletService).isUserAuthorized(anyLong(), anyLong());
 
-        mockMvc.perform(get("/user/1/wallet/1/transfers")
+        mockMvc.perform(get("/users/1/wallets/1/transfers")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"userId\":1}"))
                 .andExpect(status().isForbidden())
@@ -151,12 +154,16 @@ class TransactionControllerTest {
         Wallet wallet = new Wallet();
 
         doNothing().when(walletService).isUserAuthorized(userId, walletId);
+        List<Object> transactions = List.of(
+                new Transaction(100.0, TransactionType.DEPOSIT, wallet)
+        );
 
         when(transactionService.getTransactionHistoryByType(walletId, List.of("DEPOSIT")))
-                .thenReturn(List.of(new Transaction(100.0, TransactionType.DEPOSIT, wallet)));
+                .thenReturn(transactions);
+        when(transactionService.sortTransactions(transactions, "asc")).thenReturn(transactions);
 
         // Perform request with filter type 'DEPOSIT'
-        mockMvc.perform(get("/user/1/wallet/1/transfers")
+        mockMvc.perform(get("/users/1/wallets/1/transfers")
                         .param("type", "DEPOSIT")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -178,10 +185,16 @@ class TransactionControllerTest {
         Wallet wallet = new Wallet();
 
         doNothing().when(walletService).isUserAuthorized(userId, walletId);
+        List<Object> transactions = List.of(
+                new Transaction(50.0, TransactionType.WITHDRAWAL, wallet)
+        );
         when(transactionService.getTransactionHistoryByType(walletId, List.of("WITHDRAWAL")))
-                .thenReturn(List.of(new Transaction(50.0, TransactionType.WITHDRAWAL, wallet)));
+                .thenReturn(transactions);
 
-        mockMvc.perform(get("/user/1/wallet/1/transfers")
+        when(transactionService.sortTransactions(transactions, "asc")).thenReturn(transactions);
+
+
+        mockMvc.perform(get("/users/1/wallets/1/transfers")
                         .param("type", "WITHDRAWAL")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -192,6 +205,66 @@ class TransactionControllerTest {
         verify(transactionService, times(1)).getTransactionHistoryByType(walletId, List.of("WITHDRAWAL"));
     }
 
+    @Test
+    public void testGetTransactionHistoryWithDepositAndTransferType() throws Exception {
+        mockMvc = MockMvcBuilders.standaloneSetup(transactionController).build();
 
+        Long userId = 1L;
+        Long walletId = 1L;
+        Wallet wallet = new Wallet();
 
+        doNothing().when(walletService).isUserAuthorized(userId, walletId);
+
+        List<Object> transactions = List.of(
+                new Transaction(100.0, TransactionType.DEPOSIT, wallet),
+                new TransferTransaction(50.0, TransactionType.TRANSFER, wallet, new Wallet())
+        );
+
+        when(transactionService.getTransactionHistoryByType(walletId, List.of("DEPOSIT", "TRANSFER")))
+                .thenReturn(transactions);
+        when(transactionService.sortTransactions(transactions, "asc")).thenReturn(transactions);
+
+        mockMvc.perform(get("/users/1/wallets/1/transfers")
+                        .param("type", "DEPOSIT,TRANSFER")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].amount").value(100.0))
+                .andExpect(jsonPath("$[0].type").value("DEPOSIT"))
+                .andExpect(jsonPath("$[1].amount").value(50.0))
+                .andExpect(jsonPath("$[1].type").value("TRANSFER"))
+                .andExpect(jsonPath("$[2]").doesNotExist());
+
+        verify(transactionService, times(1)).getTransactionHistoryByType(walletId, List.of("DEPOSIT", "TRANSFER"));
+    }
+
+    @Test
+    public void testGetTransactionHistoryWithDepositAndWithdrawType() throws Exception {
+        mockMvc = MockMvcBuilders.standaloneSetup(transactionController).build();
+
+        Long userId = 1L;
+        Long walletId = 1L;
+        Wallet wallet = new Wallet();
+
+        doNothing().when(walletService).isUserAuthorized(userId, walletId);
+        List<Object> transactions = List.of(
+                new Transaction(100.0, TransactionType.DEPOSIT, wallet),
+                new Transaction(50.0, TransactionType.WITHDRAWAL, wallet)
+        );
+
+        when(transactionService.getTransactionHistoryByType(walletId, List.of("DEPOSIT", "WITHDRAWAL")))
+                .thenReturn(transactions);
+        when(transactionService.sortTransactions(transactions, "asc")).thenReturn(transactions);
+
+        mockMvc.perform(get("/users/1/wallets/1/transfers")
+                        .param("type", "DEPOSIT,WITHDRAWAL")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].amount").value(100.0))
+                .andExpect(jsonPath("$[0].type").value("DEPOSIT"))
+                .andExpect(jsonPath("$[1].amount").value(50.0))
+                .andExpect(jsonPath("$[1].type").value("WITHDRAWAL"))
+                .andExpect(jsonPath("$[2]").doesNotExist());
+
+        verify(transactionService, times(1)).getTransactionHistoryByType(walletId, List.of("DEPOSIT", "WITHDRAWAL"));
+    }
 }
