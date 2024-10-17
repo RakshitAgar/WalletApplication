@@ -2,6 +2,7 @@ package com.example.WalletApplication.service;
 
 import com.example.WalletApplication.Exceptions.InvalidUserRegistrationCredentials;
 import com.example.WalletApplication.entity.User;
+import com.example.WalletApplication.enums.CurrencyType;
 import com.example.WalletApplication.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,11 +24,11 @@ public class UserService implements UserDetailsService {
     }
 
     @Transactional
-    public User registerUser(String username, String password) {
+    public User registerUser(String username, String password, CurrencyType currencyType) {
         if(username == null || username.isBlank() || password == null || password.isBlank()) {
             throw new InvalidUserRegistrationCredentials("Username and password cannot be empty");
         }
-        return userRepository.save(new User(username, password));
+        return userRepository.save(new User(username, password,currencyType));
     }
 
     @Override

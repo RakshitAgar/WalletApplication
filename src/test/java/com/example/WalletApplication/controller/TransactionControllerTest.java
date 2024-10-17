@@ -151,7 +151,8 @@ class TransactionControllerTest {
         Wallet wallet = new Wallet();
 
         doNothing().when(walletService).isUserAuthorized(userId, walletId);
-        when(transactionService.getTransactionHistoryByType(userId, "DEPOSIT"))
+
+        when(transactionService.getTransactionHistoryByType(walletId, List.of("DEPOSIT")))
                 .thenReturn(List.of(new Transaction(100.0, TransactionType.DEPOSIT, wallet)));
 
         // Perform request with filter type 'DEPOSIT'
@@ -163,8 +164,10 @@ class TransactionControllerTest {
                 .andExpect(jsonPath("$[0].type").value("DEPOSIT"))
                 .andExpect(jsonPath("$[1]").doesNotExist());
 
-        verify(transactionService, times(1)).getTransactionHistoryByType(userId, "DEPOSIT");
+        // Verifying the interaction with the service method
+        verify(transactionService, times(1)).getTransactionHistoryByType(walletId, List.of("DEPOSIT"));
     }
+
 
     @Test
     public void testGetTransactionHistoryWithWithDrawType() throws Exception {
@@ -175,7 +178,7 @@ class TransactionControllerTest {
         Wallet wallet = new Wallet();
 
         doNothing().when(walletService).isUserAuthorized(userId, walletId);
-        when(transactionService.getTransactionHistoryByType(walletId, "WITHDRAWAL"))
+        when(transactionService.getTransactionHistoryByType(walletId, List.of("WITHDRAWAL")))
                 .thenReturn(List.of(new Transaction(50.0, TransactionType.WITHDRAWAL, wallet)));
 
         mockMvc.perform(get("/user/1/wallet/1/transfers")
@@ -186,7 +189,7 @@ class TransactionControllerTest {
                 .andExpect(jsonPath("$[0].type").value("WITHDRAWAL"))
                 .andExpect(jsonPath("$[1]").doesNotExist());
 
-        verify(transactionService, times(1)).getTransactionHistoryByType(walletId, "WITHDRAWAL");
+        verify(transactionService, times(1)).getTransactionHistoryByType(walletId, List.of("WITHDRAWAL"));
     }
 
 

@@ -38,7 +38,7 @@ class UserServiceTest {
         String password = "realPassword";
 
         // This uses the real database (H2) and the real repository via Autowired
-        User result = userService.registerUser(username, password);
+        User result = userService.registerUser(username, password,null);
 
         // Verify the user was saved in the real local database (H2)
         User savedUser = userRepository.findById(result.getId()).orElse(null);
@@ -52,14 +52,14 @@ class UserServiceTest {
         String username = "realUser";
         String password = "realPassword";
 
-        User result = userService.registerUser(username, password);
+        User result = userService.registerUser(username, password,null);
 
         // Verify the user was saved in the real local database (H2)
         Optional<User> savedUser = userRepository.findByUsername(username);
         assertNotNull(savedUser);
 
         assertThrows(DataIntegrityViolationException.class, () -> {
-            userService.registerUser(username, password);
+            userService.registerUser(username, password,null);
         });
     }
 
@@ -69,7 +69,7 @@ class UserServiceTest {
 
         UserService userService = new UserService(userRepository);
         assertThrows(InvalidUserRegistrationCredentials.class, () -> {
-            userService.registerUser("","Password");
+            userService.registerUser("","Password",null);
         });
     }
 
@@ -79,7 +79,7 @@ class UserServiceTest {
 
         UserService userService = new UserService(userRepository);
         assertThrows(InvalidUserRegistrationCredentials.class, () -> {
-            userService.registerUser("username","");
+            userService.registerUser("username","",null);
         });
     }
 
@@ -89,7 +89,7 @@ class UserServiceTest {
 
         UserService userService = new UserService(userRepository);
         assertThrows(InvalidUserRegistrationCredentials.class, () -> {
-            userService.registerUser("","");
+            userService.registerUser("","",null);
         });
     }
 
@@ -105,11 +105,11 @@ class UserServiceTest {
         String username = "testUser";
         String password = "testPassword";
 
-        User savedUser = new User(username,password);
+        User savedUser = new User(username,password,null);
 
         when(userRepository.save(any(User.class))).thenReturn(savedUser);
 
-        User result = userService.registerUser(username, password);
+        User result = userService.registerUser(username, password,null);
 
         verify(userRepository,times(1)).save(any(User.class));
         assertNotNull(result);

@@ -53,7 +53,7 @@ class WalletServiceTest {
         WalletService walletService = new WalletService(userRepository,transactionRepository);
 
         Long userId = 1L;
-        User savedUser = new User("testUser", "testPassword");
+        User savedUser = new User("testUser", "testPassword",null);
 
         when(userRepository.findById(userId)).thenReturn(Optional.of(savedUser));
 
@@ -79,7 +79,7 @@ class WalletServiceTest {
         WalletService walletService = new WalletService(userRepository,transactionRepository);
 
         Long userId = 1L;
-        User savedUser = new User("testUser", "testPassword");
+        User savedUser = new User("testUser", "testPassword",null);
         savedUser.getWallet().deposit(200);
 
         when(userRepository.findById(userId)).thenReturn(Optional.of(savedUser));
@@ -96,7 +96,7 @@ class WalletServiceTest {
         WalletService walletService = new WalletService(userRepository,transactionRepository);
 
         Long userId = 1L;
-        User savedUser = new User("testUser", "testPassword");
+        User savedUser = new User("testUser", "testPassword",null);
         savedUser.getWallet().deposit(100);
 
         when(userRepository.findById(userId)).thenReturn(Optional.of(savedUser));

@@ -2,6 +2,7 @@ package com.example.WalletApplication.controller;
 
 import com.example.WalletApplication.config.SecurityConfig;
 import com.example.WalletApplication.entity.User;
+import com.example.WalletApplication.enums.CurrencyType;
 import com.example.WalletApplication.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -40,33 +41,33 @@ class UserControllerTest {
     @Test
     public void testRegisterUser_Success() throws Exception {
         // Arrange
-        User mockUser = new User("testUser", "testPassword");
+        User mockUser = new User("testUser", "testPassword",CurrencyType.USD);
 
-        when(userService.registerUser(anyString(), anyString())).thenReturn(mockUser);
+        when(userService.registerUser(anyString(), anyString(), any(CurrencyType.class))).thenReturn(mockUser);
 
         // Act & Assert
         mockMvc.perform(post("/user/register")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"username\":\"testUser\",\"password\":\"testPassword\"}"))
+                        .content("{\"username\":\"testUser\",\"password\":\"testPassword\",\"currencyType\":\"USD\"}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.username").value("testUser"))
                 .andExpect(jsonPath("$.password").value("testPassword"));
 
-        verify(userService, times(1)).registerUser("testUser", "testPassword");
+        verify(userService, times(1)).registerUser("testUser", "testPassword", CurrencyType.USD);
     }
 
     @Test
     public void testRegisterUser_Failure() throws Exception {
 
-        when(userService.registerUser(anyString(), anyString())).thenThrow(new IllegalArgumentException("Invalid credentials"));
+        when(userService.registerUser(anyString(), anyString(),any(CurrencyType.class))).thenThrow(new IllegalArgumentException("Invalid credentials"));
 
         // Act & Assert
         mockMvc.perform(post("/user/register")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"username\":\"\",\"password\":\"testPassword\"}"))
+                        .content("{\"username\":\"\",\"password\":\"testPassword\",\"currencyType\":\"USD\"}"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$").value("Invalid credentials"));
 
-        verify(userService, times(1)).registerUser(anyString(), anyString());
+        verify(userService, times(1)).registerUser(anyString(), anyString(),any(CurrencyType.class));
     }
 }

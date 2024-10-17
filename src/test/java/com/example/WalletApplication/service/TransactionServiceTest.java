@@ -38,8 +38,8 @@ class TransactionServiceTest {
     public void testTransactionServiceTransferWithSufficientBalance() {
         Long senderId = 1L;
         Long receiverId = 2L;
-        User sender = new User("senderUser", "senderPassword");
-        User receiver = new User("receiverUser", "receiverPassword");
+        User sender = new User("senderUser", "senderPassword",null);
+        User receiver = new User("receiverUser", "receiverPassword",null);
         sender.getWallet().deposit(200);
 
         // Mock repository behavior
@@ -60,8 +60,8 @@ class TransactionServiceTest {
     public void testTransactionServiceTransferWithInsufficientBalance() {
         Long senderId = 1L;
         Long receiverId = 2L;
-        User sender = new User("senderUser", "senderPassword");
-        User receiver = new User("receiverUser", "receiverPassword");
+        User sender = new User("senderUser", "senderPassword",null);
+        User receiver = new User("receiverUser", "receiverPassword",null);
         sender.getWallet().deposit(50);
 
         when(userRepository.findById(senderId)).thenReturn(Optional.of(sender));
@@ -75,27 +75,5 @@ class TransactionServiceTest {
         assertEquals(50.0, sender.getWallet().getBalance());
         assertEquals(0.0, receiver.getWallet().getBalance());
     }
-//    @Test
-//    public void testTransactionServiceGetTransactionHistory() {
-//        Long walletId = 1L;
-//        User user = new User("testUser", "testPassword");
-//        user.getWallet().deposit(100);
-//        user.getWallet().withdraw(50);
-//
-//        // Create mock transactions
-//        Transaction depositTransaction = new Transaction(100.0, TransactionType.DEPOSIT, "deposit", user.getWallet());
-//        Transaction withdrawTransaction = new Transaction(50.0, TransactionType.WITHDRAWAL, "withdraw", user.getWallet());
-//
-//        // Mock repository behavior
-//        when(transactionRepository.findByWalletId(walletId)).thenReturn(List.of(depositTransaction, withdrawTransaction));
-//
-//        // Retrieve transaction history
-//        List<Transaction> transactions = transactionService.getTransactionHistory(walletId);
-//
-//        // Ensure 2 transactions (deposit and withdraw)
-//        assertEquals(2, transactions.size());
-//        assertEquals(100.0, transactions.get(0).getAmount());
-//        assertEquals(50.0, transactions.get(1).getAmount());
-//    }
 
 }

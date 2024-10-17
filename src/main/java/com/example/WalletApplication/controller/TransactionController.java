@@ -50,7 +50,7 @@ public class TransactionController {
     public ResponseEntity<?> getTransactionHistory(
             @PathVariable Long userId,
             @PathVariable Long walletId,
-            @RequestParam(required = false) String type) {
+            @RequestParam(required = false) List<String> type) {
         try {
             walletService.isUserAuthorized(userId, walletId);
 

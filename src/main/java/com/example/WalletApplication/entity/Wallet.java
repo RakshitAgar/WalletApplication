@@ -1,6 +1,7 @@
 package com.example.WalletApplication.entity;
 
 import com.example.WalletApplication.Exceptions.NotSufficientBalance;
+import com.example.WalletApplication.enums.CurrencyType;
 import jakarta.persistence.*;
 import lombok.Getter;
 
@@ -15,11 +16,22 @@ public class Wallet {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Enumerated(EnumType.STRING)
+    private CurrencyType currencyType;
+
     private double balance = 0.0;
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "wallet_id")
     private List<Transaction> transactions = new ArrayList<>();
+
+    public Wallet(CurrencyType currencyType) {
+        this.currencyType = currencyType;
+    }
+
+    public Wallet() {
+        this.currencyType = CurrencyType.INR;
+    }
 
     public void deposit(double amount) {
         if (amount <= 0) {
