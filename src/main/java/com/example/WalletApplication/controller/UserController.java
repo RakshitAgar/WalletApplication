@@ -1,4 +1,6 @@
 package com.example.WalletApplication.controller;
+import com.example.WalletApplication.Exceptions.InvalidUserRegistrationCredentials;
+import com.example.WalletApplication.Exceptions.UserAlreadyPresentException;
 import com.example.WalletApplication.dto.RegisterRequestDTO;
 import com.example.WalletApplication.entity.User;
 import com.example.WalletApplication.enums.CurrencyType;
@@ -20,10 +22,10 @@ public class UserController {
             CurrencyType currencyType = CurrencyType.valueOf(registerRequestDTO.getCurrencyType());
             User user = userService.registerUser(username, password,currencyType);
             return ResponseEntity.ok(user);
-        } catch (IllegalArgumentException e) {
+        } catch (InvalidUserRegistrationCredentials e) {
             return ResponseEntity.badRequest().body(e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().body("An error occurred: " + e.getMessage());
+        }  catch (UserAlreadyPresentException e) {
+            return ResponseEntity.status(409).body(e.getMessage());
         }
     }
 }

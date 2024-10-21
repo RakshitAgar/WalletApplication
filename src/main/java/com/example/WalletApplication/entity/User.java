@@ -3,6 +3,7 @@ package com.example.WalletApplication.entity;
 import com.example.WalletApplication.enums.CurrencyType;
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.Setter;
 
 @Entity
 @Table(name = "users")
@@ -15,6 +16,7 @@ public class User {
     @Column(unique = true, nullable = false)
     private String username;
     private String password;
+    @Setter
     @OneToOne(cascade = CascadeType.ALL)
     private Wallet wallet;
 

@@ -1,5 +1,7 @@
 package com.example.WalletApplication.controller;
 
+import com.example.WalletApplication.Exceptions.InvalidUserRegistrationCredentials;
+import com.example.WalletApplication.Exceptions.UserAlreadyPresentException;
 import com.example.WalletApplication.config.SecurityConfig;
 import com.example.WalletApplication.entity.User;
 import com.example.WalletApplication.enums.CurrencyType;
@@ -57,17 +59,48 @@ class UserControllerTest {
     }
 
     @Test
-    public void testRegisterUser_Failure() throws Exception {
+    public void testRegisterUserFailureWhenUserAlreadyPresent() throws Exception {
 
-        when(userService.registerUser(anyString(), anyString(),any(CurrencyType.class))).thenThrow(new IllegalArgumentException("Invalid credentials"));
+        when(userService.registerUser(anyString(), anyString(),any(CurrencyType.class))).thenThrow(new UserAlreadyPresentException("User with username already exists"));
+
+        // Act & Assert
+        mockMvc.perform(post("/users/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"username\":\"User1\",\"password\":\"testPassword\",\"currencyType\":\"USD\"}"))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$").value("User with username already exists"));
+
+        verify(userService, times(1)).registerUser(anyString(), anyString(),any(CurrencyType.class));
+    }
+
+    @Test
+    public void testRegisterUserFailureWhenUserNameIsPassedEmpty() throws Exception {
+
+        when(userService.registerUser(anyString(), anyString(),any(CurrencyType.class))).thenThrow(new InvalidUserRegistrationCredentials("Username and password cannot be empty"));
 
         // Act & Assert
         mockMvc.perform(post("/users/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"username\":\"\",\"password\":\"testPassword\",\"currencyType\":\"USD\"}"))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$").value("Invalid credentials"));
+                .andExpect(jsonPath("$").value("Username and password cannot be empty"));
 
         verify(userService, times(1)).registerUser(anyString(), anyString(),any(CurrencyType.class));
     }
+
+    @Test
+    public void testRegisterUserFailureWhenPasswordIsPassedEmpty() throws Exception {
+
+        when(userService.registerUser(anyString(), anyString(),any(CurrencyType.class))).thenThrow(new InvalidUserRegistrationCredentials("Username and password cannot be empty"));
+
+        // Act & Assert
+        mockMvc.perform(post("/users/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"username\":\"name\",\"password\":\"\",\"currencyType\":\"USD\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$").value("Username and password cannot be empty"));
+
+        verify(userService, times(1)).registerUser(anyString(), anyString(),any(CurrencyType.class));
+    }
+
 }

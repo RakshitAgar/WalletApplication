@@ -1,6 +1,7 @@
 package com.example.WalletApplication.service;
 
 import com.example.WalletApplication.Exceptions.InvalidUserRegistrationCredentials;
+import com.example.WalletApplication.Exceptions.UserAlreadyPresentException;
 import com.example.WalletApplication.entity.User;
 import com.example.WalletApplication.enums.CurrencyType;
 import com.example.WalletApplication.repository.UserRepository;
@@ -27,6 +28,9 @@ public class UserService implements UserDetailsService {
     public User registerUser(String username, String password, CurrencyType currencyType) {
         if(username == null || username.isBlank() || password == null || password.isBlank()) {
             throw new InvalidUserRegistrationCredentials("Username and password cannot be empty");
+        }
+        if(userRepository.findByUsername(username).isPresent()) {
+            throw new UserAlreadyPresentException("User with username already exists");
         }
         return userRepository.save(new User(username, password,currencyType));
     }

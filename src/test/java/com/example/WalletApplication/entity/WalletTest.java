@@ -1,5 +1,6 @@
 package com.example.WalletApplication.entity;
 
+import com.example.WalletApplication.Exceptions.InvalidAmount;
 import com.example.WalletApplication.Exceptions.NotSufficientBalance;
 import org.junit.jupiter.api.Test;
 
@@ -25,7 +26,7 @@ class WalletTest {
         Wallet wallet = new Wallet();
 
         assertEquals(0.0, wallet.getBalance());
-        assertThrows(IllegalArgumentException.class, () -> {
+        assertThrows(InvalidAmount.class, () -> {
             wallet.deposit(0);
         });
     }
@@ -35,7 +36,7 @@ class WalletTest {
         Wallet wallet = new Wallet();
 
         assertEquals(0.0, wallet.getBalance());
-        assertThrows(IllegalArgumentException.class, () -> {
+        assertThrows(InvalidAmount.class, () -> {
             wallet.deposit(-10);
         });
     }
@@ -54,7 +55,7 @@ class WalletTest {
         Wallet wallet = new Wallet();
 
         assertEquals(0.0, wallet.getBalance());
-        assertThrows(IllegalArgumentException.class, () -> {
+        assertThrows(InvalidAmount.class, () -> {
             wallet.withdraw(-10);
         });
     }
@@ -64,7 +65,7 @@ class WalletTest {
         Wallet wallet = new Wallet();
 
         assertEquals(0.0, wallet.getBalance());
-        assertThrows(IllegalArgumentException.class, () -> {
+        assertThrows(InvalidAmount.class, () -> {
             wallet.withdraw(0);
         });
     }

@@ -1,6 +1,7 @@
 package com.example.WalletApplication.service;
 
 import com.example.WalletApplication.Exceptions.InvalidUserRegistrationCredentials;
+import com.example.WalletApplication.Exceptions.UserAlreadyPresentException;
 import com.example.WalletApplication.entity.User;
 import com.example.WalletApplication.repository.UserRepository;
 import org.junit.jupiter.api.Test;
@@ -58,7 +59,7 @@ class UserServiceTest {
         Optional<User> savedUser = userRepository.findByUsername(username);
         assertNotNull(savedUser);
 
-        assertThrows(DataIntegrityViolationException.class, () -> {
+        assertThrows(UserAlreadyPresentException.class, () -> {
             userService.registerUser(username, password,null);
         });
     }

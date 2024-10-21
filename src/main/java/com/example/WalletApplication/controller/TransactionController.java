@@ -2,7 +2,6 @@ package com.example.WalletApplication.controller;
 
 import com.example.WalletApplication.Exceptions.UnAuthorisedUserException;
 import com.example.WalletApplication.Exceptions.UnAuthorisedWalletException;
-import com.example.WalletApplication.dto.TransferTransactionRequestDTO;
 import com.example.WalletApplication.service.TransactionService;
 import com.example.WalletApplication.service.UserService;
 import com.example.WalletApplication.service.WalletService;
@@ -12,7 +11,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("users/{userId}/wallets/{walletId}")
@@ -27,24 +25,6 @@ public class TransactionController {
     @Autowired
     private WalletService walletService;
 
-    @PostMapping("/transfers")
-    public ResponseEntity<?> transfer(@PathVariable Long userId, @PathVariable Long walletId, @RequestBody TransferTransactionRequestDTO transferRequest) {
-        try {
-            walletService.isUserAuthorized(userId, walletId);
-            Double amount = transferRequest.getAmount();
-            transactionService.transfer(userId, transferRequest.getReceiverId(), amount);
-            return ResponseEntity.ok().body(Map.of(
-                    "message", "Amount transferred successfully",
-                    "amount", amount
-            ));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        } catch (UnAuthorisedUserException e) {
-            return ResponseEntity.status(403).body("User not authorized");
-        }catch (UnAuthorisedWalletException e) {
-            return ResponseEntity.status(403).body("User not authorized for this Wallet");
-        }
-    }
 
     @GetMapping("/transfers")
     public ResponseEntity<?> getTransactionHistory(
@@ -53,13 +33,11 @@ public class TransactionController {
             @RequestParam(required = false) List<String> type,
             @RequestParam(required = false, defaultValue = "asc") String sortByTime) {
         try {
-            walletService.isUserAuthorized(userId, walletId);
-
             List<Object> transactions;
             if (type != null) {
-                transactions = new ArrayList<>(transactionService.getTransactionHistoryByType(walletId, type));
+                transactions = new ArrayList<>(transactionService.getTransactionHistoryByType(userId,walletId, type));
             } else {
-                transactions = transactionService.getTransactionHistory(walletId);
+                transactions = transactionService.getTransactionHistory(userId,walletId);
             }
             transactions = transactionService.sortTransactions(transactions, sortByTime);
 
