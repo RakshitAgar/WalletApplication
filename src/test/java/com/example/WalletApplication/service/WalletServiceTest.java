@@ -45,13 +45,16 @@ class WalletServiceTest {
     @Mock
     private SecurityContext securityContext;
 
+    @Mock
+    private CurrencyConversionService currencyConversionService;
+
     @InjectMocks
     private WalletService walletService;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        walletService = new WalletService(userRepository, transactionRepository, walletRepository,transferTransactionRepository);
+        walletService = new WalletService(userRepository, transactionRepository, walletRepository,currencyConversionService,transferTransactionRepository);
         // Set up authentication
         when(securityContext.getAuthentication()).thenReturn(authentication);
         SecurityContextHolder.setContext(securityContext);
@@ -120,12 +123,12 @@ class WalletServiceTest {
         Long receiverId = 2L;
         Long walletId = 1L;
         Double amount = 30.0;
+        Double convertedAmount = 33.0; // Example converted amount
 
         User sender = mock(User.class);
         User receiver = mock(User.class);
         Wallet senderWallet = mock(Wallet.class);
         Wallet receiverWallet = mock(Wallet.class);
-        CurrencyType mockCurrencyType = mock(CurrencyType.class);
 
         // Mock authentication and repository interactions
         when(authentication.getName()).thenReturn("testUser");
@@ -135,10 +138,11 @@ class WalletServiceTest {
         when(sender.getUsername()).thenReturn("testUser");
         when(sender.getWallet()).thenReturn(senderWallet);
         when(receiver.getWallet()).thenReturn(receiverWallet);
-        when(senderWallet.getCurrencyType()).thenReturn(mockCurrencyType);
-        when(receiverWallet.getCurrencyType()).thenReturn(mockCurrencyType);
-        when(mockCurrencyType.toBase(amount)).thenReturn(amount);
-        when(mockCurrencyType.fromBase(amount)).thenReturn(amount);
+        when(senderWallet.getCurrencyType()).thenReturn(CurrencyType.USD);
+        when(receiverWallet.getCurrencyType()).thenReturn(CurrencyType.INR);
+
+        // Mock the currency conversion service
+        when(currencyConversionService.convertCurrency(amount, "USD", "INR")).thenReturn(convertedAmount);
 
         // Spy on the walletService to mock the isUserValid method
         WalletService spyWalletService = spy(walletService);
@@ -149,8 +153,9 @@ class WalletServiceTest {
 
         // Verify interactions
         verify(senderWallet).withdraw(amount);
-        verify(receiverWallet).deposit(amount);
+        verify(receiverWallet).deposit(convertedAmount);
         verify(transferTransactionRepository).save(any(TransferTransaction.class));
+        verify(currencyConversionService).convertCurrency(amount, "USD", "INR");
     }
 
     @Test

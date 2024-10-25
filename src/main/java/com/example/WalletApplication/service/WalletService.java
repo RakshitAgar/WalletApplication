@@ -18,6 +18,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class WalletService {
+    private CurrencyConversionService currencyConversionService;
+
     private final UserRepository userRepository;
 
     private TransactionRepository transactionRepository;
@@ -26,11 +28,16 @@ public class WalletService {
 
     private TransferTransactionRepository transferTransactionRepository;
 
-    public WalletService(UserRepository userRepository, TransactionRepository transactionRepository, WalletRepository walletRepository, TransferTransactionRepository transferTransactionRepository) {
+    public WalletService(UserRepository userRepository,
+                         TransactionRepository transactionRepository,
+                         WalletRepository walletRepository,
+                         CurrencyConversionService currencyConversionService,
+                         TransferTransactionRepository transferTransactionRepository) {
         this.userRepository = userRepository;
         this.transactionRepository = transactionRepository;
         this.walletRepository = walletRepository;
         this.transferTransactionRepository = transferTransactionRepository;
+        this.currencyConversionService = currencyConversionService;
     }
 
     public void isUserValid(Long userId, Long walletId) {
@@ -90,8 +97,7 @@ public class WalletService {
                 .orElseThrow(() -> new UserNotFoundException("Sender not found"));
         User receiver = userRepository.findById(receiverId)
                 .orElseThrow(() -> new ReceiverNotFoundException("Receiver not found"));
-        double baseValue = sender.getWallet().getCurrencyType().toBase(amount);
-        double convertedAmount = receiver.getWallet().getCurrencyType().fromBase(baseValue);
+        double convertedAmount = currencyConversionService.convertCurrency(amount, sender.getWallet().getCurrencyType().toString(), receiver.getWallet().getCurrencyType().toString());
         try {
             sender.getWallet().withdraw(amount);
             receiver.getWallet().deposit(convertedAmount);
