@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package conversion;
+
+option java_multiple_files = true;
+option java_package = "com.example.WalletApplication.grpc";
+option java_outer_classname = "ConversionProto";
+
+service ConversionService {
+  rpc Convert (ConvertRequest) returns (ConvertResponse);
+}
+
+message ConvertRequest {
+  double amount = 1;
+  string from_currency = 2;
+  string to_currency = 3;
+}
+
+message ConvertResponse {
+  double converted_amount = 1;
+}
